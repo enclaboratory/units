@@ -1,0 +1,27 @@
+# IDE
+.idea/
+.vscode/
+
+# Go
+/bin/
+*.test
+*.out
+coverage.html
+coverage.out
+
+# Local env / secrets
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# .claude/ — §6.nonies 패턴: settings.json + agents/ 공유, local state ignore
+.claude/*
+!.claude/settings.json
+!.claude/agents/
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/launch.json
+.claude/worktrees/
