@@ -40,7 +40,7 @@ func (p Power) MW() float64 { return float64(p) / mega }
 // Over integrates the power over a duration: E = P × t.
 // KW(500).Over(2 * time.Hour) is MWh(1).
 func (p Power) Over(d time.Duration) Energy {
-	return Energy(float64(p) * d.Hours())
+	return Energy(float64(p) * d.Hours() / kilo)
 }
 
 // Validate rejects NaN and ±Inf. Call it at external input boundaries

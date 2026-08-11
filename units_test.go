@@ -180,9 +180,9 @@ func TestString(t *testing.T) {
 		{KW(1.5).String(), "1500 W"},
 		{MW(2).String(), "2e+06 W"},
 		{W(0).String(), "0 W"},
-		{Wh(1500).String(), "1500 Wh"},
-		{KWh(1.5).String(), "1500 Wh"},
-		{Wh(-0.25).String(), "-0.25 Wh"},
+		{Wh(1500).String(), "1.5 kWh"},
+		{KWh(1.5).String(), "1.5 kWh"},
+		{Wh(-0.25).String(), "-0.00025 kWh"},
 	}
 	for _, tt := range tests {
 		if tt.got != tt.want {
