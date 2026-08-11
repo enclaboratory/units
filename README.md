@@ -15,7 +15,7 @@ go get github.com/enclaboratory/units
 
 ```go
 type Power float64  // internal representation: W
-type Energy float64 // internal representation: Wh
+type Energy float64 // internal representation: kWh (v0.2.0)
 ```
 
 Values enter through unit constructors and leave through unit accessors, so

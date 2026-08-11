@@ -1,11 +1,11 @@
 // Package units provides compile-time checked physical quantities for the
 // enclaboratory fleet (HUS §6.1 SSoT / §11): Power (watts) and Energy
-// (watt-hours) as defined float64 types, so kW/MW/kWh values stop being raw
+// (kilowatt-hours) as defined float64 types, so kW/MW/kWh values stop being raw
 // float64 fields distinguished only by a name suffix (PricePerKwh,
 // totalSupplyKWh, raw MW columns).
 //
 // Each type fixes one internal representation — Power is always W, Energy is
-// always Wh. Values are created through unit constructors (W, KW, MW / Wh,
+// always kWh (v0.2.0 — kWh is the settlement domain unit). Values are created through unit constructors (W, KW, MW / Wh,
 // KWh, MWh) and read back through unit accessors (.W(), .KW(), .MW() /
 // .Wh(), .KWh(), .MWh()), so a unit mistake is a visible conversion at the
 // boundary instead of a silent scaling bug in the middle of a formula.
