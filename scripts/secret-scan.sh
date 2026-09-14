@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # 시크릿이 커밋에 들어가는 것을 막는다.
 #
+# lefthook pre-commit 의 `secret-scan` command 가 부른다 (2026-09-14 — 그전엔 .githooks/pre-commit 으로
+# core.hooksPath 를 잡았는데, 그러면 git 이 .git/hooks 의 lefthook 을 통째로 무시해 gofmt·test 훅이 죽었다.
+# 훅 체계는 lefthook 하나다: `brew install lefthook && lefthook install`).
+#
 # ## 왜 GitHub push protection 이 아니라 여기인가
 #
 # GitHub 쪽은 **푸시**를 막는다 — 그때는 이미 로컬 히스토리에 있고, 지우려면 히스토리를

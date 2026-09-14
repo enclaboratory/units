@@ -1,0 +1,9 @@
+# lefthook — 훅 체계는 이것 하나다 (2026-09-14). 설치: brew install lefthook && lefthook install
+#
+# 그전엔 .githooks/pre-commit + core.hooksPath 였는데, hooksPath 가 잡히면 git 이 .git/hooks 를
+# 통째로 무시해 lefthook 을 쓰는 repo 에서 gofmt·test 훅이 죽었다. 이 repo 는 시크릿 검사만 있다.
+pre-commit:
+  commands:
+    # 시크릿 커밋 차단 — 스크립트가 index 를 직접 읽는다 (파일 이름 + 추가 줄). 우회: SKIP_SECRET_CHECK=1
+    secret-scan:
+      run: scripts/secret-scan.sh
