@@ -12,7 +12,7 @@ Each type fixes one internal representation — Power is always W, Energy is alw
 
 Validate rejects NaN/±Inf and is meant for external input boundaries \(API payloads, CSV imports, DB reads\). String always prints the base unit \(W / kWh\) — no automatic unit selection.
 
-### Non\\\-goals
+### Non\-goals
 
 These are deliberate exclusions, not missing features:
 

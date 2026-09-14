@@ -39,6 +39,7 @@ for pkg in $pkgs; do
     --repository.url https://github.com/enclaboratory/units
     --repository.default-branch main
     --repository.path /
+    --template-file "doc=$(dirname "$0")/gomarkdoc-doc.gotxt"   # 헤딩 이중 이스케이프 수정
     --output "$OUT/$name.md"
   )
   [ "$MODE" = check ] && args+=(--check)

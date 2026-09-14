@@ -1,0 +1,16 @@
+{{- /* gomarkdoc `doc` 템플릿 오버라이드 — 헤딩을 rawHeader 로.
+       기본 템플릿은 header(include "text") 라 text 가 한 번 이스케이프한 것을 header 가 다시
+       이스케이프해 `2026\\\-08\\\-04` 처럼 백슬래시가 렌더에 남는다 (2026-09-14 connectkit 실측).
+       rawHeader 는 이미 이스케이프된 text 를 그대로 쓴다. 이 줄들 외에는 v1.1.0 기본과 동일. */ -}}
+{{- range (iter .Blocks) -}}
+	{{- if eq .Entry.Kind "paragraph" -}}
+		{{- template "text" .Entry.Spans -}}
+	{{- else if eq .Entry.Kind "code" -}}
+		{{- codeBlock "" (include "text" .Entry.Spans) -}}
+	{{- else if eq .Entry.Kind "header" -}}
+		{{- rawHeader .Entry.Level (include "text" .Entry.Spans) -}}
+	{{- else if eq .Entry.Kind "list" -}}
+		{{- template "list" .Entry.List -}}
+	{{- end -}}
+	{{- if (not .Last) -}}{{- spacer -}}{{- end -}}
+{{- end -}}
