@@ -10,7 +10,7 @@ Package units provides compile\-time checked physical quantities for the enclabo
 
 Each type fixes one internal representation — Power is always W, Energy is always kWh \(v0.2.0 — kWh is the settlement domain unit\). Values are created through unit constructors \(W, KW, MW / Wh, KWh, MWh\) and read back through unit accessors \(.W\(\), .KW\(\), .MW\(\) / .Wh\(\), .KWh\(\), .MWh\(\)\), so a unit mistake is a visible conversion at the boundary instead of a silent scaling bug in the middle of a formula. Because Power and Energy are distinct defined types, mixing them \(power \+ energy, assigning one to the other\) is a compile error; crossing the dimension requires the explicit operators Power.Over \(P × t → E\) and Energy.Per \(E / t → P\).
 
-Validate rejects NaN/±Inf and is meant for external input boundaries \(API payloads, CSV imports, DB reads\). String always prints the base unit \(W / Wh\) — no automatic unit selection.
+Validate rejects NaN/±Inf and is meant for external input boundaries \(API payloads, CSV imports, DB reads\). String always prints the base unit \(W / kWh\) — no automatic unit selection.
 
 ### Non\\\-goals
 

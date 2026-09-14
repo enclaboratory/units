@@ -16,7 +16,7 @@
 //
 // Validate rejects NaN/±Inf and is meant for external input boundaries
 // (API payloads, CSV imports, DB reads). String always prints the base unit
-// (W / Wh) — no automatic unit selection.
+// (W / kWh) — no automatic unit selection.
 //
 // # Non-goals
 //

@@ -1,7 +1,7 @@
 # units
 
 Compile-time checked physical quantities for enclaboratory services —
-`Power` (internally watts) and `Energy` (internally watt-hours) as defined
+`Power` (internally watts) and `Energy` (internally kilowatt-hours) as defined
 `float64` types, replacing raw floats whose unit lives only in a field-name
 suffix (`PricePerKwh float64`, `totalSupplyKWh float64`, raw MW columns).
 
@@ -55,7 +55,7 @@ if err := units.KWh(payload.Supply).Validate(); err != nil {
 }
 ```
 
-`String()` prints the fixed base unit (`"1500 W"`, `"1500 Wh"`) for logs and
+`String()` prints the fixed base unit (`"1500 W"`, `"1.5 kWh"`) for logs and
 debugging only.
 
 ## Non-goals
