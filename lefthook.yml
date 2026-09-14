@@ -7,3 +7,8 @@ pre-commit:
     # 시크릿 커밋 차단 — 스크립트가 index 를 직접 읽는다 (파일 이름 + 추가 줄). 우회: SKIP_SECRET_CHECK=1
     secret-scan:
       run: scripts/secret-scan.sh
+    # SDK·RPC 레퍼런스 자동 최신화 — 주석이 바뀐 커밋에 docs/reference/ 재생성물을 같이 싣는다 (정본은 주석).
+    docs:
+      glob:
+        - "*.go"
+      run: scripts/gen-docs.sh && git add docs/reference

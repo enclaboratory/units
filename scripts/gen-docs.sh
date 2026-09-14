@@ -8,9 +8,8 @@
 # 생기면 audit 의 scripts/gen-docs.sh 를 본으로 그 절을 붙인다.
 #
 # 왜 커밋하나: 팀원이 GitHub 에서 그대로 읽는다 (private repo 라 pkg.go.dev 불가, Pages 는
-# team plan 에서 public). 드리프트는 CI docs-sync(검사)가 막는다 — 이 repo 는 lefthook 을
-# 안 쓰므로(.githooks/pre-commit 은 시크릿 검사 전용) 로컬 자동 재생성 훅은 없다. 주석을
-# 고쳤으면 커밋 전에 `scripts/gen-docs.sh` 를 손으로 돌린다.
+# team plan 에서 public). 드리프트는 lefthook pre-commit `docs`(자동 재생성) + CI docs-sync(검사)가
+# 막는다 (2026-09-14 lefthook.yml 도입). 손으로 돌리려면 `scripts/gen-docs.sh`.
 # 생성물에 날짜·SHA 를 박지 않는다 — 박으면 매 실행이 diff 라 검사가 못 선다. "언제 것인가" 는
 # git 이 답한다 (파일 history / 태그 permalink). 상세 docs/reference/README.md.
 #
