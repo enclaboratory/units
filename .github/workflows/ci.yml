@@ -9,12 +9,17 @@ on:
       - "go.mod"
       - "go.sum"
       - ".github/workflows/**"
+      # docs-sync — 생성물·생성 스크립트만 바뀐 push 도 검사 대상 (손편집 드리프트 차단)
+      - "docs/reference/**"
+      - "scripts/gen-docs.sh"
   pull_request:
     paths:
       - "**/*.go"
       - "go.mod"
       - "go.sum"
       - ".github/workflows/**"
+      - "docs/reference/**"
+      - "scripts/gen-docs.sh"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -46,3 +51,22 @@ jobs:
           fi
       - name: go test
         run: go test ./... -count=1 -race
+
+  # docs-sync (2026-09-14, audit 파일럿 이식) — docs/reference/ 는 godoc 주석에서 만든 **생성물**이다.
+  # 주석을 고치고 재생성을 빼먹으면(또는 생성물을 손으로 고치면) 팀원이 읽는 문서가 코드와
+  # 어긋난다. 이 repo 는 lefthook 이 없어 로컬 자동 재생성이 없으므로 이 검사가 유일한 게이트다.
+  # 도구 버전은 scripts/gen-docs.sh 의 `go run ...@vX` 핀 — 러너와 로컬이 같은 바이너리를
+  # 쓰므로 "내 머신에선 같았다" 가 없다. zero-dependency 모듈이라 private module git config 는
+  # 필요 없고, proto 가 없어 buf 도 부르지 않는다. 검사 범위는 docs/reference 만.
+  docs-sync:
+    name: docs/reference == source comments
+    if: "! contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+          cache-dependency-path: go.mod
+      - name: docs-check
+        run: scripts/gen-docs.sh check
