@@ -21,7 +21,7 @@ HUS v2.5 를 따른다. 본문 + ADR SSoT (복사하지 않고 참조만):
 
 ## 세션 시작 시 자율 절차 (ADR-0044 passive + ADR-0071 gateway)
 
-0. **repo-lock**: 작업 시작 시 `husctl repo-lock acquire units --owner <session-id>` (TTL 90분 — 장기 세션은 만료 전 재acquire). 완료/종료 시 `release`. acquire 실패(exit 8) = 타 세션 작업 중 — 같은 repo 동시 수정 금지 (2026-08-05, orchestrator 디스패치 체크와 대칭).
+0. **repo-lock**: 작업 시작 시 `husctl repo-lock acquire units --owner <session-id> --paths <만질 경로,경로>` — 락은 repo 가 아니라 **경로** 단위다(2026-09-17). 다른 경로를 잡은 세션과는 공존하고, 겹치면 exit 8 (그 세션 몫 — 기다리거나 트리를 나눈다). `--paths` 생략 = repo 전체 = holder 가 있으면 거부. TTL 90분 — 장기 세션은 만료 전 재acquire(같은 owner 는 갱신). 완료/종료 시 `release`. 락은 파일 충돌 장치일 뿐 같은 트리의 `stash`·`reset` 은 못 막는다 (coordination README §6.5·§7.6).
 1. `/Users/hakyoung/workspace/HUS/coordination/bin/husctl inbox units` — ledger+legacy 티켓과 remote sync 상태 확인.
 2. ledger 티켓 작업 시작: `husctl ticket claim <ticket-id> --owner <session-id>`.
 3. 완료: `husctl ticket done <ticket-id> --owner <session-id>`. 발신: `husctl ticket send --from units --to <rp> --file <path>`.
