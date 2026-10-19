@@ -1,14 +1,13 @@
 name: CI
 
-# 트리거별로 도는 것 (2026-10-19 사용자 결정 — Actions 분 절감. GitHub 는 잡마다 분 단위로 올림 과금한다).
-# ⚠️ 이 repo 의 lefthook 에는 pre-push 테스트 훅이 없다 — push 한 커밋의 테스트는 다음 03:00 nightly 가
-#    처음 돈다. push 전에 로컬에서 make test 를 돌린다.
-#   push (main·태그)     → quick 한 잡만 (go vet · go build · gofmt · docs-sync). 테스트는 돌지 않는다.
+# 트리거별로 도는 것 (2026-10-19 사용자 결정 — Actions 분 절감. GitHub 는 잡마다 분 단위로 올림 과금한다):
+#   push (main·태그)     → quick + 전체 테스트. 이 repo 의 lefthook 에는 pre-push 테스트 훅이 없어서 push 에서
+#                           테스트를 빼면 다음 03:00 nightly 까지 아무도 테스트를 돌리지 않는다. 10월 분 사용량이
+#                           작아 push 테스트를 유지한다 (orchestrator 검토 2026-10-19). 태그는 소비자가 고정해
+#                           받는 릴리스이기도 하다.
 #   schedule (03:00 KST)  → nightly-gate → main 이 마지막 성공 schedule run 이후 바뀌었을 때만 전체 테스트
 #   workflow_dispatch     → quick + 전체 테스트 (필요할 때 수동으로)
 #   pull_request          → quick + 전체 테스트 (Dependabot PR 도 이 결과를 본다)
-# 라이브러리라 push 가 드물고 소비자는 태그를 고정해 받는다. 태그 push 도 quick 만 돈다 — 태그 전에
-# 러너에서 전체 테스트를 보고 싶으면 workflow_dispatch 로 돌린다.
 # public repo — 권한은 contents·actions read 만. pull_request 경로에는 시크릿을 읽는 스텝이 없다
 # (fork PR 은 시크릿을 받지 않는다). nightly-gate 의 GITHUB_TOKEN 은 schedule 에서만 쓴다.
 on:
@@ -102,13 +101,13 @@ jobs:
           echo "run=$run" >> "$GITHUB_OUTPUT"
           echo "nightly: run=$run (마지막 성공 schedule ${last:-없음} · 현재 $SHA)"
 
-  # 전체 테스트 — push 에서는 돌지 않는다. schedule 은 nightly-gate 가 run=true 일 때만.
+  # 전체 테스트 — push(main·태그)·dispatch·PR 에서 돈다 (pre-push 훅이 없다). schedule 은 nightly-gate 가 run=true 일 때만.
   test:
     name: Go test
     needs: [quick, nightly-gate]
     if: >-
-      !cancelled() && github.event_name != 'push'
-      && needs.quick.result != 'failure'
+      !cancelled() && needs.quick.result != 'failure'
+      && !contains(github.event.head_commit.message, '[skip ci]')
       && (github.event_name != 'schedule' || needs.nightly-gate.outputs.run == 'true')
     runs-on: ubuntu-latest
     steps:
