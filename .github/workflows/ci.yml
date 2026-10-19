@@ -8,6 +8,7 @@ on:
       - "**/*.go"
       - "go.mod"
       - "go.sum"
+      - "Makefile"
       - ".github/workflows/**"
       # docs-sync — 생성물·생성 스크립트만 바뀐 push 도 검사 대상 (손편집 드리프트 차단)
       - "docs/reference/**"
@@ -17,6 +18,7 @@ on:
       - "**/*.go"
       - "go.mod"
       - "go.sum"
+      - "Makefile"
       - ".github/workflows/**"
       - "docs/reference/**"
       - "scripts/gen-docs.sh"
@@ -50,7 +52,7 @@ jobs:
             exit 1
           fi
       - name: go test
-        run: go test ./... -count=1 -race
+        run: make test
 
   # docs-sync (2026-09-14, audit 파일럿 이식) — docs/reference/ 는 godoc 주석에서 만든 **생성물**이다.
   # 주석을 고치고 재생성을 빼먹으면(또는 생성물을 손으로 고치면) 팀원이 읽는 문서가 코드와
