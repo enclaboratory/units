@@ -57,8 +57,12 @@ done <<< "$staged"
 diffout=$(git diff --cached -U0 --diff-filter=ACMR || true)
 added=$(printf '%s\n' "$diffout" | awk 'substr($0,1,1)=="+" && substr($0,1,3)!="+++"')
 
-if [ -n "$diffout" ] && [ -z "$added" ]; then
-  head_; say "  검사기가 추가 줄을 하나도 못 뽑았다 — 통과가 아니라 **고장**이다"
+# "못 뽑았다" 와 "뽑을 게 없다" 는 다르다 — 삭제만 있는 커밋은 추가 줄이 원래 0 이다 (2026-09-16 실측:
+# allow 한 줄을 지우는 커밋 11건이 이 가드에 전부 거부됐다). 추가 줄 수의 정본은 numstat 이고,
+# numstat 이 0 보다 큰데 awk 가 못 뽑은 것만 고장이다. 바이너리(numstat `-`)는 세지 않는다.
+expected=$(git diff --cached --numstat --diff-filter=ACMR | awk '$1 != "-" {a+=$1} END {print a+0}')
+if [ "$expected" -gt 0 ] && [ -z "$added" ]; then
+  head_; say "  검사기가 추가 줄을 하나도 못 뽑았다 (numstat 은 $expected 줄) — 통과가 아니라 **고장**이다"
 fi
 
 # **제공자 접두가 붙은 것만** 본다. 느슨하면 오탐이 늘고, 오탐이 늘면 사람이 훅을 끈다 —
