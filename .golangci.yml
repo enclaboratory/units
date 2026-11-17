@@ -1,0 +1,31 @@
+# golangci-lint 공통 설정 — ADR-0082 SSoT.
+# 각 Go repo 가 루트에 복사한다 (common.env.example·dependabot-config.yml 과 같은 mirror 방식).
+# drift 는 dependency-watch W-시리즈가 감시. 로컬 수정은 이 파일 먼저.
+#
+# go.work repo 주의: 루트 `./...` 는 멀티모듈에서 실패한다 — CI 는 모듈별로 실행한다
+#   (working-directory: services/<svc> 등). golangci-lint-action 의 `args: --new-from-rev=origin/main`
+#   으로 신규 위반만 게이트 (ADR-0082 강도: 신규부터·소급 없음).
+version: "2"
+run:
+  timeout: 5m
+linters:
+  # default=standard: errcheck govet ineffassign staticcheck unused
+  default: standard
+  enable:
+    - exhaustive
+    - forbidigo
+  settings:
+    forbidigo:
+      # ADR-0092 결정 7 — 조용한 폴백 금지 (2026-11-15). 값이 없거나 못 읽으면 기본값으로 채우는 헬퍼를 막는다.
+      # repo 마다 헬퍼 이름이 다르면 그 repo .golangci.yml 에 패턴을 더한다(지우지 않는다). 정말 필요한 자리는
+      # `//nolint:forbidigo // ADR-0092-7: <정상 설정·예외 자리 이유>` 로 남긴다 — 이유 없는 nolint 는 리뷰에서 거절.
+      forbid:
+        - pattern: ^(getEnv|getEnvOr|getEnvDefault|getenvDefault|envOr|envOrDefault|envDefault|getEnvInt|getEnvBool|getEnvDuration|parseDurationOr|parseIntOr|atoiOr)$
+          msg: "ADR-0092 결정 7 — 값이 빠지면 기본값으로 채우지 말고 무엇이 빠졌는지 밝히는 오류로 멈춘다"
+      analyze-types: false
+    exhaustive:
+      # 의도적 catch-all default 는 exhaustive 로 간주 — 소음 대부분 소거 (ADR-0082 실측).
+      default-signifies-exhaustive: true
+  exclusions:
+    generated: lax
+    # protoconv UNSPECIFIED 생략 등 도입 repo 별 예외는 각 repo 가 이 아래 추가하고 근거 주석.

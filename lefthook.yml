@@ -1,7 +1,7 @@
 # lefthook — 훅 체계는 이것 하나다 (2026-09-14). 설치: brew install lefthook && lefthook install
 #
 # 그전엔 .githooks/pre-commit + core.hooksPath 였는데, hooksPath 가 잡히면 git 이 .git/hooks 를
-# 통째로 무시해 lefthook 을 쓰는 repo 에서 gofmt·test 훅이 죽었다. 이 repo 는 시크릿 검사만 있다.
+# 통째로 무시해 lefthook 을 쓰는 repo 에서 gofmt·test 훅이 죽었다. 이 repo 는 pre-commit 시크릿 검사 + pre-push lint-new·test 다.
 pre-commit:
   commands:
     # 시크릿 커밋 차단 — 스크립트가 index 를 직접 읽는다 (파일 이름 + 추가 줄). 우회: SKIP_SECRET_CHECK=1
@@ -12,3 +12,12 @@ pre-commit:
       glob:
         - "*.go"
       run: scripts/gen-docs.sh && git add docs/reference
+
+# push 전 — 새 위반만 보는 lint + 짧은 테스트 (HUS lefthook 템플릿 Go, ADR-0082 v1.1 결정 4, 2026-11-17).
+# 기준은 origin/main 과의 merge-base. scripts/lint 는 golangci 에 --allow-serial-runners 를 붙인다.
+pre-push:
+  commands:
+    lint-new:
+      run: scripts/lint go --new-from-rev="$(git merge-base HEAD origin/main)"
+    test:
+      run: go test -short -timeout 60s ./...

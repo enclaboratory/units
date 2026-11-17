@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# 전체 Go 테스트 — 자원 상한(nice · GOMEMLIMIT/GOGC · -p 1) · -race (HUS ADR-0081 v1.2, docs/work-commands.md)
+#
+# 쓰기:  scripts/test [go test 인자…]   (예: scripts/test -run TestX)
+# 테스트 입구는 이것 하나다 — CI 도 이 파일을 부른다. 명령·상한은 여기 한 곳에만 적는다. -count=1 -race 는 CI 가 쓰던 플래그 그대로.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+GOMEMLIMIT=2GiB GOGC=50 exec nice -n 19 go test -p 1 -count=1 -race "$@" ./...

@@ -18,8 +18,9 @@ on:
       - "**/*.go"
       - "go.mod"
       - "go.sum"
-      - "Makefile"
+      - "scripts/**"
       - ".github/workflows/**"
+      - ".golangci.yml"
       # docs-sync — 생성물·생성 스크립트만 바뀐 push 도 검사 대상 (손편집 드리프트 차단)
       - "docs/reference/**"
       - "scripts/gen-docs.sh"
@@ -28,8 +29,9 @@ on:
       - "**/*.go"
       - "go.mod"
       - "go.sum"
-      - "Makefile"
+      - "scripts/**"
       - ".github/workflows/**"
+      - ".golangci.yml"
       - "docs/reference/**"
       - "scripts/gen-docs.sh"
   schedule:
@@ -53,6 +55,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # lint-new 가 기준 커밋(event.before)을 찾는다
       - uses: actions/setup-go@v6
         with:
           go-version: '1.26'
@@ -76,6 +80,33 @@ jobs:
       # 도구 버전은 scripts/gen-docs.sh 의 `go run ...@vX` 핀 — 러너와 로컬이 같은 바이너리를
       # 쓰므로 "내 머신에선 같았다" 가 없다. zero-dependency 모듈이라 private module git config 는
       # 필요 없고, proto 가 없어 buf 도 부르지 않는다. 검사 범위는 docs/reference 만.
+      # 새 위반만 보는 golangci-lint — push 마다 (ADR-0082 v1.1 결정 4, 2026-11-17). 명령은 scripts/lint 한 곳(lefthook pre-push 와 같다).
+      # 기준: push = 직전 main(event.before), PR = 대상 브랜치. 못 찾으면 실패 — 짐작하지 않는다. 태그 push 는 이미 지난 main 커밋이라 건너뛴다.
+      # action v8 에는 install-only 가 없다 (2026-11-16 실측) — v9.
+      - name: golangci-lint 설치
+        if: (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')) || github.event_name == 'pull_request'
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.13.1
+          install-only: true
+      - name: lint-new (새 위반만 — scripts/lint go)
+        if: (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')) || github.event_name == 'pull_request'
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ "$EVENT" = pull_request ]; then
+            git fetch --no-tags --quiet origin "$BASE_REF"
+            base="origin/$BASE_REF"
+          elif [ -n "$BEFORE" ] && [ "$BEFORE" != 0000000000000000000000000000000000000000 ]; then
+            base="$BEFORE"
+            git cat-file -e "$base^{commit}" 2>/dev/null || git fetch --no-tags --quiet origin "$base"
+          else
+            echo "::error::lint-new 기준 커밋이 없다 (첫 push·force push — event.before=$BEFORE). 짐작하지 않는다 — 로컬에서 scripts/lint go 로 확인 뒤 다시 push"
+            exit 1
+          fi
+          scripts/lint go --new-from-rev="$base"
       - name: docs-sync (docs/reference == source comments)
         run: scripts/gen-docs.sh check
 
@@ -117,4 +148,4 @@ jobs:
           go-version: '1.26'
           cache-dependency-path: go.mod
       - name: go test
-        run: make test
+        run: scripts/test

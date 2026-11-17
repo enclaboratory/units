@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# 정적 검사 — go vet · gofmt · golangci-lint(forbidigo 포함). --new-from-rev=<rev> 면 golangci 는 새 위반만 본다
+#
+# 쓰기:  scripts/lint [go|all] [--new-from-rev=<rev>]
+#   go    golangci-lint 만 (pre-push·CI quick 의 lint-new 가 이것 — HUS docs/work-commands.md, ADR-0082 v1.1)
+#   all   (기본) go vet · gofmt · golangci-lint
+# golangci 에는 --allow-serial-runners 를 붙인다 — 한 머신에서 세션 여럿이 동시에 push 하면 exit 3 으로 바로 죽는다 (2026-11-16 archimap 실측).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+part=all
+rev=""
+for a in "$@"; do
+  case "$a" in
+    go|all) part=$a ;;
+    --new-from-rev=*) rev=${a#--new-from-rev=} ;;
+    -h|--help) sed -n '2,7p' "$0"; exit 0 ;;
+    *) echo "❌ 모르는 인자: $a (scripts/lint [go|all] [--new-from-rev=<rev>])" >&2; exit 2 ;;
+  esac
+done
+if [ -n "$rev" ] && ! git rev-parse --verify -q "$rev^{commit}" >/dev/null; then
+  # 기준을 짐작하지 않는다 — 못 찾으면 멈춘다 (전체 검사로 바꾸면 옛 위반에 막히고, 건너뛰면 초록이 거짓이 된다).
+  echo "❌ --new-from-rev 기준 커밋을 찾지 못했다: $rev (git fetch 했는지)" >&2
+  exit 2
+fi
+command -v golangci-lint >/dev/null || { echo "❌ golangci-lint 가 없다 — go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.1" >&2; exit 2; }
+
+if [ "$part" = all ]; then
+  nice -n 10 go vet ./...
+  diff=$(gofmt -l .)
+  if [ -n "$diff" ]; then echo "❌ gofmt 적용 필요:"; echo "$diff"; exit 1; fi
+fi
+args=(run --allow-serial-runners --timeout=5m)
+[ -n "$rev" ] && args+=("--new-from-rev=$rev")
+echo "golangci-lint${rev:+ (--new-from-rev=$rev)}"
+nice -n 10 golangci-lint "${args[@]}" ./...
