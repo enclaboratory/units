@@ -11,31 +11,8 @@ name: CI
 # public repo — 권한은 contents·actions read 만. pull_request 경로에는 시크릿을 읽는 스텝이 없다
 # (fork PR 은 시크릿을 받지 않는다). nightly-gate 의 GITHUB_TOKEN 은 schedule 에서만 쓴다.
 on:
-  push:
-    branches: [main]
-    tags: ['v*']
-    paths:
-      - "**/*.go"
-      - "go.mod"
-      - "go.sum"
-      - "scripts/**"
-      - ".github/workflows/**"
-      - ".golangci.yml"
-      # docs-sync — 생성물·생성 스크립트만 바뀐 push 도 검사 대상 (손편집 드리프트 차단)
-      - "docs/reference/**"
-      - "scripts/gen-docs.sh"
-  pull_request:
-    paths:
-      - "**/*.go"
-      - "go.mod"
-      - "go.sum"
-      - "scripts/**"
-      - ".github/workflows/**"
-      - ".golangci.yml"
-      - "docs/reference/**"
-      - "scripts/gen-docs.sh"
-  schedule:
-    - cron: "0 18 * * *" # 03:00 KST, 기본 브랜치(main) 대상
+  # 2026-11-26 사용자 결정 — Actions 결제 정지 동안 자동 트리거(push·pull_request·schedule)를 껐다. 수동 실행만 남긴다.
+  # 검사는 로컬 lefthook(pre-commit·pre-push), 발행·배포는 로컬에서 한다. 결제가 풀리면 이 커밋을 되돌린다.
   workflow_dispatch:
 
 permissions:
